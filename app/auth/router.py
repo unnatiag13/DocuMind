@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from app.auth.schemas import UserCreate, UserResponse, UserInDB
-from app.auth.hashing import hash_passwords
+from .schemas import UserCreate, UserResponse, UserInDB
+from .hashing import hash_passwords
 from app.database import cur,conn
 
 router = APIRouter()
