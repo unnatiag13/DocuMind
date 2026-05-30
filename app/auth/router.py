@@ -16,10 +16,8 @@ def register(user_details:UserCreate):
                            email=user_details.email, hashed_password=hashed_pass)
 
     cur.execute("INSERT INTO users(name,email,hashed_password) " \
-    "VALUES(%s,%s,%s)",(user_in_db.name,user_in_db.email,user_in_db.hashed_password))
+    "VALUES(%s,%s,%s) RETURNING id",(user_in_db.name,user_in_db.email,user_in_db.hashed_password))
     conn.commit()
-
-    cur.execute("SELECT id from users WHERE email=%s",(user_in_db.email,))
     id = cur.fetchone()
     user_response = UserResponse(name=user_details.name,
                            email=user_details.email,id=id[0])
