@@ -13,3 +13,10 @@ file_path VARCHAR(250) NOT NULL UNIQUE,
 uploaded_by INTEGER NOT NULL REFERENCES users(id),
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 );
+
+CREATE TABLE document_chunks(
+    id SERIAL PRIMARY KEY,
+    document_id INTEGER REFERENCES documents(id),
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+)
