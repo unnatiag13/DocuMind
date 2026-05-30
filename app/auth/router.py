@@ -23,7 +23,7 @@ def register(user_details:UserCreate):
                            email=user_details.email,id=id[0])
 
     return user_response
-
+  
 
 @router.post("/login")
 def login(login_details:LoginRequest):
