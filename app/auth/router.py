@@ -28,11 +28,11 @@ def register(user_details:UserCreate):
 @router.post("/login")
 def login(login_details:LoginRequest):
         cur.execute("SELECT hashed_password from users WHERE email=%s",(login_details.email,))
-        hashed_pass = cur.fetchone()[0]
+        hashed_pass = cur.fetchone()
         if(hashed_pass==None):
               raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User doesn't exist")
         else:
-              if check_password(login_details.password,hashed_pass):
+              if check_password(login_details.password,hashed_pass[0]):
                     access_token = create_access_token({"sub":login_details.email})
                     login_response = Token(access_token=access_token)
                     return login_response
