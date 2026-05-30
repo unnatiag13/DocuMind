@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer
 import datetime
 
 load_dotenv()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 def create_access_token(data:dict,expires_delta:int=30):
     expire = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=expires_delta)

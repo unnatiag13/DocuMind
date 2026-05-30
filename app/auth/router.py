@@ -1,8 +1,10 @@
 from fastapi import APIRouter,HTTPException,status, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from .schemas import UserCreate , UserInDB , UserResponse, LoginRequest, Token
 from .hashing import hash_passwords , check_password
 from app.database import cur,conn
 from .token import create_access_token , verify_access_token, get_current_user
+from typing import Annotated
 
 router = APIRouter()
 
@@ -23,22 +25,38 @@ def register(user_details:UserCreate):
                            email=user_details.email,id=id[0])
 
     return user_response
-  
+
 
 @router.post("/login")
-def login(login_details:LoginRequest):
-        cur.execute("SELECT hashed_password from users WHERE email=%s",(login_details.email,))
+def login(login_details: Annotated[OAuth2PasswordRequestForm, Depends()]):
+        email = login_details.username
+        cur.execute("SELECT hashed_password from users WHERE email=%s",(email,))
         hashed_pass = cur.fetchone()
         if(hashed_pass==None):
               raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User doesn't exist")
         else:
               if check_password(login_details.password,hashed_pass[0]):
-                    access_token = create_access_token({"sub":login_details.email})
+                    access_token = create_access_token({"sub":email})
                     login_response = Token(access_token=access_token)
                     return login_response
               else:
                     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Wrong password entered")
               
+  
+
+# @router.post("/login")
+# def login(login_details:LoginRequest):
+#         cur.execute("SELECT hashed_password from users WHERE email=%s",(login_details.email,))
+#         hashed_pass = cur.fetchone()
+#         if(hashed_pass==None):
+#               raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User doesn't exist")
+#         else:
+#               if check_password(login_details.password,hashed_pass[0]):
+#                     access_token = create_access_token({"sub":login_details.email})
+#                     login_response = Token(access_token=access_token)
+#                     return login_response
+#               else:
+#                     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Wrong password entered")
 
 @router.get("/me")
 def me(current_user: str = Depends(get_current_user)):
