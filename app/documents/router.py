@@ -2,8 +2,8 @@ from fastapi import APIRouter ,Depends, File, UploadFile,HTTPException,status
 from typing import Annotated
 from pathlib import Path
 from ..auth.token import get_current_user
-from .schemas import DocumentResponse
-from .utils import extract_text,chunk_text,generate_embedding
+from .schemas import DocumentResponse, ChatRequest
+from .utils import extract_text,chunk_text,generate_embedding,retrieve_chunks,get_answer
 from app.database import cur,conn
 import uuid, os 
 from datetime import datetime
@@ -54,5 +54,13 @@ async def upload_documents(current_logged_in_user:Annotated[str, Depends(get_cur
     finally:
         await file.close()
 
-    
+
+@router.post("/chat")
+async def chat(current_logged_in_user:Annotated[str, Depends(get_current_user)],request:ChatRequest):
+    doc_id = request.document_id
+    query = request.query
+    chunks = retrieve_chunks(query,doc_id)
+    response = get_answer(query,chunks)
+    return response
+
     

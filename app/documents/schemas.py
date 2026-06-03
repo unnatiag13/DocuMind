@@ -6,3 +6,6 @@ class DocumentResponse(BaseModel):
     uploaded_at: datetime
     filename: str
 
+class ChatRequest(BaseModel):
+    query:str
+    document_id:int
