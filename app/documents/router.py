@@ -3,7 +3,7 @@ from typing import Annotated
 from pathlib import Path
 from ..auth.token import get_current_user
 from .schemas import DocumentResponse
-from .utils import extract_text
+from .utils import extract_text,chunk_text,generate_embedding
 from app.database import cur,conn
 import uuid, os 
 from datetime import datetime
@@ -32,12 +32,14 @@ async def upload_documents(current_logged_in_user:Annotated[str, Depends(get_cur
             f.write(content)
         cur.execute("INSERT INTO documents(filename,file_path,uploaded_by,original_filename) " \
         "VALUES(%s,%s,%s,%s) RETURNING id",(generated_filename,file_path,id,original_filename))
-        conn.commit()
         doc_id = cur.fetchone()[0]
 
         # extracting texts ->
         extracted_text = extract_text(file_path)
-        cur.execute("INSERT INTO document_chunks(document_id,content) VALUES(%s,%s) returning id",(doc_id,extracted_text))
+        chunks= chunk_text(extracted_text)
+        for chunk in chunks:
+            embedding = generate_embedding(chunk)
+            cur.execute("INSERT INTO document_chunks(document_id,content,embedding) VALUES(%s,%s,%s) returning id",(doc_id,chunk,embedding))
         conn.commit()
         res = DocumentResponse(id=doc_id,uploaded_at=datetime.now(),filename=original_filename)
         return res
